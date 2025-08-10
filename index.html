@@ -121,25 +121,28 @@
   }
 
   function drawChart(times, prices){
-    const W = cvs.width, H = cvs.height;
-    ctx.clearRect(0,0,W,H);
-    if(!times?.length || !prices?.length) return;
+  const W = cvs.width, H = cvs.height;
+  ctx.clearRect(0,0,W,H);
+  if(!times?.length || !prices?.length) return;
 
-    const L=50, R=10, T=10, B=26;
-    const n = prices.length;
-    const x = i => L + (i/(n-1 || 1))*(W-L-R);
-    const min = Math.min(...prices), max = Math.max(...prices);
-    const y = p => T + (max-p)/(max-min || 1)*(H-T-B);
+  const L=50, R=10, T=10, B=26;
+  const n = prices.length;
+  const x = i => L + (i/(n-1 || 1))*(W-L-R);
+  const min = Math.min(...prices), max = Math.max(...prices);
+  const y = p => T + (max-p)/(max-min || 1)*(H-T-B);
 
-    ctx.strokeStyle = "#2a6aa0";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    prices.forEach((p,i) => {
-      if(i===0) ctx.moveTo(x(i), y(p));
-      else ctx.lineTo(x(i), y(p));
-    });
-    ctx.stroke();
-  }
+  // Choose line color based on start vs last price
+  const isUp = prices[prices.length - 1] >= prices[0];
+  ctx.strokeStyle = isUp ? cssVar("--up", "#42f5c8") : cssVar("--down", "#ff6b6b");
+  ctx.lineWidth = 2;
+
+  ctx.beginPath();
+  prices.forEach((p,i) => {
+    if(i===0) ctx.moveTo(x(i), y(p));
+    else ctx.lineTo(x(i), y(p));
+  });
+  ctx.stroke();
+}
 
   document.querySelectorAll(".btn").forEach(btn => {
     btn.addEventListener("click", () => {
