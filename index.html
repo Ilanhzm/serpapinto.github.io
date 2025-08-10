@@ -90,28 +90,25 @@
   </div>
 
 <script>
-  // Placeholder updater: show HH:MM:SS as the "price"
-  function pad(n){return n.toString().padStart(2,'0')}
-  function tick(){
-    const d = new Date();
-    const hh = pad(d.getHours()), mm = pad(d.getMinutes()), ss = pad(d.getSeconds());
-    document.getElementById('vixValue').textContent = `${hh}:${mm}:${ss}`;
-    document.getElementById('lastUpdate').textContent = d.toLocaleTimeString();
-  }
-  tick();
-  setInterval(tick, 1000);
+  const WORKER = "https://round-sunset-491a.ilanhzam.workers.dev"; // your worker URL
 
-  /* ===== Where we'll add the real API next =====
-  Example (Polygon.io):
-  async function loadVIX(){
-    const r = await fetch('https://api.polygon.io/v2/aggs/ticker/VIX/prev?apiKey=YOUR_KEY');
-    const j = await r.json();
-    const price = j.results?.[0]?.c; // close price
-    document.getElementById('vixValue').textContent = price?.toFixed(2) ?? 'N/A';
-    document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
+  async function loadVIX() {
+    try {
+      const r = await fetch(WORKER, { cache: "no-store" });
+      const { price, ts } = await r.json();
+      document.getElementById("vixValue").textContent =
+        price != null ? Number(price).toFixed(2) : "N/A";
+      document.getElementById("lastUpdate").textContent =
+        new Date(ts).toLocaleTimeString();
+    } catch (e) {
+      document.getElementById("vixValue").textContent = "N/A";
+      document.getElementById("lastUpdate").textContent = "fetch error";
+      console.error(e);
+    }
   }
-  setInterval(loadVIX, 5000);
-  */
+  loadVIX();
+  setInterval(loadVIX, 1000); // update every 5s
 </script>
+
 </body>
 </html>
