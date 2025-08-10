@@ -11,10 +11,25 @@
     margin: 0;
     font-family: Arial, sans-serif;
     font-size: 3rem;
+    background-color: #cce7ff; /* light blue water */
+    overflow: hidden;
+    position: relative;
+  }
+  .fish {
+    position: absolute;
+    width: 100px;
+    animation: swim 8s linear infinite;
+  }
+  @keyframes swim {
+    0% { left: -120px; top: 50%; transform: scaleX(1); }
+    50% { left: calc(100% + 20px); top: 40%; transform: scaleX(1); }
+    51% { transform: scaleX(-1); }
+    100% { left: -120px; top: 60%; transform: scaleX(-1); }
   }
 </style>
 </head>
 <body>
   Hello world
+  <img class="fish" src="https://upload.wikimedia.org/wikipedia/commons/0/0b/Animated_fish.gif" alt="fish">
 </body>
 </html>
