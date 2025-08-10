@@ -3,73 +3,61 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>SerpaPinto • Live VIX (placeholder)</title>
+<title>SerpaPinto • Live VIX</title>
 <style>
-  :root{
-    --bg1:#0b1220; --bg2:#0f1730; --card:#0f1b36cc; --glow:#00eaff;
-    --text:#e8f1ff; --muted:#96a3c7; --accent:#42f5c8;
-  }
-  *{box-sizing:border-box}
-  html,body{height:100%}
+  :root{ --bg1:#0b1220; --bg2:#0f1730; --card:#0f1b36cc; --glow:#00eaff;
+         --text:#e8f1ff; --muted:#96a3c7; --accent:#42f5c8; --line:#2a3d62;}
+  *{box-sizing:border-box} html,body{height:100%}
   body{
-    margin:0; color:var(--text); font-family: ui-sans-serif,system-ui,Segoe UI,Roboto,Arial;
+    margin:0; color:var(--text); font-family:ui-sans-serif,system-ui,Segoe UI,Roboto,Arial;
     background: radial-gradient(1200px 600px at 20% -10%, #10244f 0%, transparent 60%),
                 radial-gradient(900px 500px at 120% 120%, #0a233b 0%, transparent 55%),
                 linear-gradient(160deg,var(--bg1),var(--bg2));
     overflow:hidden; display:flex; align-items:center; justify-content:center; padding:24px;
   }
-  /* animated grid lines */
   .grid::before,.grid::after{
     content:""; position:absolute; inset:-200vmax; background:
-      linear-gradient(#ffffff10 1px, transparent 1px) 0 0/40px 40px,
-      linear-gradient(90deg,#ffffff10 1px, transparent 1px) 0 0/40px 40px;
-    animation: drift 30s linear infinite;
+    linear-gradient(#ffffff10 1px, transparent 1px) 0 0/40px 40px,
+    linear-gradient(90deg,#ffffff10 1px, transparent 1px) 0 0/40px 40px;
+    animation:drift 30s linear infinite;
   }
   .grid::after{ filter:blur(1px); opacity:.4; animation-duration:50s;}
-  @keyframes drift{to{transform: translate3d(80px,80px,0)}}
-
+  @keyframes drift{to{transform:translate3d(80px,80px,0)}}
   .grid{ position:fixed; inset:0; pointer-events:none; }
 
-  .card{
-    position:relative; width:min(92vw,720px); border-radius:20px; padding:28px;
-    background:var(--card); backdrop-filter: blur(8px); box-shadow:
-      0 0 0 1px #7ad7ff22, 0 20px 60px #0008, inset 0 0 80px #7ad7ff0e;
-  }
-  .heading{
-    display:flex; align-items:center; gap:12px; margin:0 0 8px 0; letter-spacing:.3px;
-    font-weight:700; font-size:clamp(18px,2.5vw,22px);
-  }
+  .card{ position:relative; width:min(96vw,900px); border-radius:20px; padding:28px;
+    background:var(--card); backdrop-filter: blur(8px);
+    box-shadow:0 0 0 1px #7ad7ff22, 0 20px 60px #0008, inset 0 0 80px #7ad7ff0e; }
+  .heading{ display:flex; align-items:center; gap:12px; margin:0 0 8px 0; letter-spacing:.3px;
+    font-weight:700; font-size:clamp(18px,2.5vw,22px);}
   .chip{padding:4px 10px; border-radius:999px; background:#102a3f; color:#9feaff; font-weight:600}
   .subtitle{color:var(--muted); margin:0 0 18px 0; font-size:14px}
-
-  .ticker{
-    display:flex; align-items:end; gap:18px; flex-wrap:wrap;
-    border-top:1px solid #2a3d62; border-bottom:1px solid #2a3d62; padding:16px 0; margin:14px 0 8px;
-  }
+  .ticker{ display:flex; align-items:end; gap:18px; flex-wrap:wrap;
+    border-top:1px solid var(--line); border-bottom:1px solid var(--line); padding:16px 0; margin:14px 0 8px; }
   .label{color:#9fb4da; font-size:14px}
   .value{font-size:clamp(40px,8vw,72px); font-weight:800; letter-spacing:.5px; text-shadow:0 0 22px #00eaff33}
   .green{color:var(--accent)}
   .row{display:flex; gap:24px; flex-wrap:wrap; color:#b7c6e6; font-size:13px}
   .dot{width:8px; height:8px; border-radius:50%; background:var(--glow); box-shadow:0 0 12px var(--glow)}
+  .btns{display:flex; gap:8px; margin:14px 0 6px;}
+  .btn{border:1px solid var(--line); color:#bcd1fb; background:#0e1b33; padding:6px 10px; border-radius:10px; cursor:pointer; font-weight:600;}
+  .btn.active{background:#163054; color:#9feaff; border-color:#2a6aa0}
+  .chartWrap{border:1px solid var(--line); border-radius:14px; margin-top:10px; padding:8px;}
+  canvas{width:100%; height:260px; display:block;}
   .footer{display:flex; align-items:center; gap:10px; margin-top:10px; color:#90a2c7}
-  a{color:#7ad7ff; text-decoration:none}
-  a:hover{text-decoration:underline}
 </style>
 </head>
 <body>
   <div class="grid"></div>
 
   <div class="card">
-    <div class="heading">
-      <span class="chip">LIVE</span>
-      VIX (placeholder)
-    </div>
-    <p class="subtitle">Showing current <strong>time</strong> as a stand-in so you can see updates in real time. We’ll wire an API next.</p>
+    <div class="heading"><span class="chip">LIVE</span> VIX</div>
+    <p class="subtitle">Live price + mini chart. Toggle range below.</p>
 
     <div class="ticker">
       <div>
         <div class="label">VIX</div>
-        <div id="vixValue" class="value green">--:--:--</div>
+        <div id="vixValue" class="value green">--.--</div>
       </div>
       <div>
         <div class="label">Last update</div>
@@ -77,38 +65,112 @@
       </div>
     </div>
 
-    <div class="row">
-      <div style="display:flex;align-items:center;gap:8px"><span class="dot"></span> Auto-refresh every second</div>
-      <div>Source: <em>placeholder (clock)</em></div>
+    <div class="btns">
+      <button class="btn active" data-mode="1d">1D</button>
+      <button class="btn" data-mode="wtd">WTD</button>
+      <button class="btn" data-mode="7d">7D</button>
     </div>
 
-    <div class="footer">
-      Coming soon: real VIX via API (Polygon, Alpha Vantage, etc.).  
-      <span style="opacity:.6">•</span>
-      <a href="#" title="not wired yet">Docs</a>
+    <div class="chartWrap">
+      <canvas id="chart" width="1200" height="300"></canvas>
     </div>
+
+    <div class="row" style="margin-top:8px">
+      <div style="display:flex;align-items:center;gap:8px"><span class="dot"></span> Auto-refresh every second</div>
+      <div>Source: Yahoo via Worker</div>
+    </div>
+
+    <div class="footer">More views coming soon: VIX9D, VIX3M, SPY…</div>
   </div>
 
 <script>
-  const WORKER = "https://round-sunset-491a.ilanhzam.workers.dev"; // your worker URL
+  const WORKER_BASE = "https://round-sunset-491a.ilanhzam.workers.dev";
+  let MODE = "1d";
 
+  // price & clock
   async function loadVIX() {
     try {
-      const r = await fetch(WORKER, { cache: "no-store" });
-      const { price, ts } = await r.json();
-      document.getElementById("vixValue").textContent =
-        price != null ? Number(price).toFixed(2) : "N/A";
-      document.getElementById("lastUpdate").textContent =
-        new Date(ts).toLocaleTimeString();
+      const r = await fetch(`${WORKER_BASE}?mode=${MODE}`, { cache: "no-store" });
+      const { last, prices, times } = await r.json();
+
+      if (last?.price != null) {
+        document.getElementById("vixValue").textContent = Number(last.price).toFixed(2);
+      } else {
+        document.getElementById("vixValue").textContent = "N/A";
+      }
+      document.getElementById("lastUpdate").textContent = new Date().toLocaleTimeString();
+
+      drawChart(times, prices);
     } catch (e) {
+      console.error(e);
       document.getElementById("vixValue").textContent = "N/A";
       document.getElementById("lastUpdate").textContent = "fetch error";
-      console.error(e);
     }
   }
-  loadVIX();
-  setInterval(loadVIX, 1000); // update every 5s
-</script>
 
+  // simple canvas line chart
+  const cvs = document.getElementById("chart");
+  const ctx = cvs.getContext("2d");
+
+  function drawChart(times, prices) {
+    const W = cvs.width, H = cvs.height;
+    ctx.clearRect(0,0,W,H);
+
+    if (!times?.length || !prices?.length) return;
+
+    // padding
+    const L=50, R=10, T=10, B=26;
+
+    // scales
+    const minP = Math.min(...prices), maxP = Math.max(...prices);
+    const minT = times[0], maxT = times[times.length-1];
+
+    function x(t){ return L + ( (t - minT) / (maxT - minT || 1) ) * (W - L - R); }
+    function y(p){ return T + (1 - (p - minP) / (maxP - minP || 1)) * (H - T - B); }
+
+    // grid
+    ctx.strokeStyle = "rgba(122, 215, 255, 0.15)";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (let i=0;i<=4;i++){
+      const yy = T + (H-T-B)*i/4;
+      ctx.moveTo(L,yy); ctx.lineTo(W-R,yy);
+    }
+    ctx.stroke();
+
+    // line
+    ctx.beginPath();
+    ctx.strokeStyle = "#42f5c8";
+    ctx.lineWidth = 2;
+    ctx.moveTo(x(times[0]), y(prices[0]));
+    for (let i=1;i<prices.length;i++){
+      ctx.lineTo(x(times[i]), y(prices[i]));
+    }
+    ctx.stroke();
+
+    // y labels
+    ctx.fillStyle = "#9fb4da";
+    ctx.font = "12px ui-sans-serif";
+    const labels = [minP, (minP+maxP)/2, maxP];
+    labels.forEach((v, idx)=>{
+      const yy = y(v);
+      ctx.fillText(v.toFixed(2), 4, yy+4);
+    });
+  }
+
+  // buttons
+  document.querySelectorAll(".btn").forEach(b=>{
+    b.addEventListener("click", ()=>{
+      document.querySelectorAll(".btn").forEach(x=>x.classList.remove("active"));
+      b.classList.add("active");
+      MODE = b.dataset.mode;
+      loadVIX();
+    });
+  });
+
+  // kick off + live refresh
+  loadVIX();
+  setInterval(loadVIX, 1000); // refresh every second
+</script>
 </body>
 </html>
