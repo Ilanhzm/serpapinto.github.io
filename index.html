@@ -2,34 +2,62 @@
 <html>
 <head>
 <title>Hello World</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <style>
-  body {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
-    font-family: Arial, sans-serif;
-    font-size: 3rem;
-    background-color: #cce7ff; /* light blue water */
-    overflow: hidden;
-    position: relative;
+  body{
+    margin:0; height:100vh; overflow:hidden; position:relative;
+    display:flex; justify-content:center; align-items:center;
+    background:#cce7ff; font-family:Arial, sans-serif;
+    font-size:clamp(2rem,6vw,3.5rem);
   }
-  .fish {
-    position: absolute;
-    width: 100px;
-    animation: swim 8s linear infinite;
+  .center{ z-index:1; color:#111; }
+  .fish{ position:absolute; width:90px; animation:swim 12s linear infinite; }
+  .fish.slow{ width:120px; animation-duration:18s; opacity:.9; }
+  .fish.fast{ width:65px;  animation-duration:9s;  opacity:.85; animation-delay:-3s; }
+
+  @keyframes swim{
+    0%   { left:-130px;            top:20%; transform:scaleX(1);  }
+    45%  { left:calc(100% + 30px); top:30%; transform:scaleX(1);  }
+    50%  { left:calc(100% + 30px); top:30%; transform:scaleX(-1); }
+    95%  { left:-130px;            top:70%; transform:scaleX(-1); }
+    100% { left:-130px;            top:70%; transform:scaleX(-1); }
   }
-  @keyframes swim {
-    0% { left: -120px; top: 50%; transform: scaleX(1); }
-    50% { left: calc(100% + 20px); top: 40%; transform: scaleX(1); }
-    51% { transform: scaleX(-1); }
-    100% { left: -120px; top: 60%; transform: scaleX(-1); }
-  }
+  svg{ display:block; }
 </style>
 </head>
 <body>
-  Hello world
-  <img class="fish" src="https://upload.wikimedia.org/wikipedia/commons/0/0b/Animated_fish.gif" alt="fish">
+  <div class="center">Hello world</div>
+
+  <!-- Blue fish -->
+  <div class="fish slow">
+    <svg viewBox="0 0 120 60" xmlns="http://www.w3.org/2000/svg" aria-label="fish">
+      <defs>
+        <linearGradient id="g1" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#5cc0ff"/>
+          <stop offset="1" stop-color="#2b9ad6"/>
+        </linearGradient>
+      </defs>
+      <ellipse cx="50" cy="30" rx="32" ry="20" fill="url(#g1)" stroke="#0b6aa8" stroke-width="2"/>
+      <polygon points="16,30 0,18 0,42" fill="#2b9ad6" stroke="#0b6aa8" stroke-width="2"/>
+      <polygon points="42,30 25,22 25,38" fill="#51b0ee" stroke="#0b6aa8" stroke-width="2" opacity=".8"/>
+      <circle cx="65" cy="26" r="3" fill="#fff"/><circle cx="65" cy="26" r="1.5" fill="#000"/>
+    </svg>
+  </div>
+
+  <!-- Orange fish -->
+  <div class="fish fast">
+    <svg viewBox="0 0 120 60" xmlns="http://www.w3.org/2000/svg" aria-label="fish">
+      <defs>
+        <linearGradient id="g2" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#ffb347"/>
+          <stop offset="1" stop-color="#ff7b00"/>
+        </linearGradient>
+      </defs>
+      <ellipse cx="50" cy="30" rx="30" ry="18" fill="url(#g2)" stroke="#b55600" stroke-width="2"/>
+      <polygon points="16,30 0,18 0,42" fill="#ff7b00" stroke="#b55600" stroke-width="2"/>
+      <polygon points="40,30 24,22 24,38" fill="#ff9a2e" stroke="#b55600" stroke-width="2" opacity=".85"/>
+      <circle cx="63" cy="26" r="3" fill="#fff"/><circle cx="63" cy="26" r="1.5" fill="#000"/>
+    </svg>
+  </div>
 </body>
 </html>
