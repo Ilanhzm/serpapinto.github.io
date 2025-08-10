@@ -1,63 +1,117 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Hello World</title>
+<meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SerpaPinto • Live VIX (placeholder)</title>
 <style>
+  :root{
+    --bg1:#0b1220; --bg2:#0f1730; --card:#0f1b36cc; --glow:#00eaff;
+    --text:#e8f1ff; --muted:#96a3c7; --accent:#42f5c8;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
   body{
-    margin:0; height:100vh; overflow:hidden; position:relative;
-    display:flex; justify-content:center; align-items:center;
-    background:#cce7ff; font-family:Arial, sans-serif;
-    font-size:clamp(2rem,6vw,3.5rem);
+    margin:0; color:var(--text); font-family: ui-sans-serif,system-ui,Segoe UI,Roboto,Arial;
+    background: radial-gradient(1200px 600px at 20% -10%, #10244f 0%, transparent 60%),
+                radial-gradient(900px 500px at 120% 120%, #0a233b 0%, transparent 55%),
+                linear-gradient(160deg,var(--bg1),var(--bg2));
+    overflow:hidden; display:flex; align-items:center; justify-content:center; padding:24px;
   }
-  .center{ z-index:1; color:#111; }
-  .fish{ position:absolute; width:90px; animation:swim 12s linear infinite; }
-  .fish.slow{ width:120px; animation-duration:18s; opacity:.9; }
-  .fish.fast{ width:65px;  animation-duration:9s;  opacity:.85; animation-delay:-3s; }
+  /* animated grid lines */
+  .grid::before,.grid::after{
+    content:""; position:absolute; inset:-200vmax; background:
+      linear-gradient(#ffffff10 1px, transparent 1px) 0 0/40px 40px,
+      linear-gradient(90deg,#ffffff10 1px, transparent 1px) 0 0/40px 40px;
+    animation: drift 30s linear infinite;
+  }
+  .grid::after{ filter:blur(1px); opacity:.4; animation-duration:50s;}
+  @keyframes drift{to{transform: translate3d(80px,80px,0)}}
 
-  @keyframes swim{
-    0%   { left:-130px;            top:20%; transform:scaleX(1);  }
-    45%  { left:calc(100% + 30px); top:30%; transform:scaleX(1);  }
-    50%  { left:calc(100% + 30px); top:30%; transform:scaleX(-1); }
-    95%  { left:-130px;            top:70%; transform:scaleX(-1); }
-    100% { left:-130px;            top:70%; transform:scaleX(-1); }
+  .grid{ position:fixed; inset:0; pointer-events:none; }
+
+  .card{
+    position:relative; width:min(92vw,720px); border-radius:20px; padding:28px;
+    background:var(--card); backdrop-filter: blur(8px); box-shadow:
+      0 0 0 1px #7ad7ff22, 0 20px 60px #0008, inset 0 0 80px #7ad7ff0e;
   }
-  svg{ display:block; }
+  .heading{
+    display:flex; align-items:center; gap:12px; margin:0 0 8px 0; letter-spacing:.3px;
+    font-weight:700; font-size:clamp(18px,2.5vw,22px);
+  }
+  .chip{padding:4px 10px; border-radius:999px; background:#102a3f; color:#9feaff; font-weight:600}
+  .subtitle{color:var(--muted); margin:0 0 18px 0; font-size:14px}
+
+  .ticker{
+    display:flex; align-items:end; gap:18px; flex-wrap:wrap;
+    border-top:1px solid #2a3d62; border-bottom:1px solid #2a3d62; padding:16px 0; margin:14px 0 8px;
+  }
+  .label{color:#9fb4da; font-size:14px}
+  .value{font-size:clamp(40px,8vw,72px); font-weight:800; letter-spacing:.5px; text-shadow:0 0 22px #00eaff33}
+  .green{color:var(--accent)}
+  .row{display:flex; gap:24px; flex-wrap:wrap; color:#b7c6e6; font-size:13px}
+  .dot{width:8px; height:8px; border-radius:50%; background:var(--glow); box-shadow:0 0 12px var(--glow)}
+  .footer{display:flex; align-items:center; gap:10px; margin-top:10px; color:#90a2c7}
+  a{color:#7ad7ff; text-decoration:none}
+  a:hover{text-decoration:underline}
 </style>
 </head>
 <body>
-  <div class="center">Hello world</div>
+  <div class="grid"></div>
 
-  <!-- Blue fish -->
-  <div class="fish slow">
-    <svg viewBox="0 0 120 60" xmlns="http://www.w3.org/2000/svg" aria-label="fish">
-      <defs>
-        <linearGradient id="g1" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0" stop-color="#5cc0ff"/>
-          <stop offset="1" stop-color="#2b9ad6"/>
-        </linearGradient>
-      </defs>
-      <ellipse cx="50" cy="30" rx="32" ry="20" fill="url(#g1)" stroke="#0b6aa8" stroke-width="2"/>
-      <polygon points="16,30 0,18 0,42" fill="#2b9ad6" stroke="#0b6aa8" stroke-width="2"/>
-      <polygon points="42,30 25,22 25,38" fill="#51b0ee" stroke="#0b6aa8" stroke-width="2" opacity=".8"/>
-      <circle cx="65" cy="26" r="3" fill="#fff"/><circle cx="65" cy="26" r="1.5" fill="#000"/>
-    </svg>
+  <div class="card">
+    <div class="heading">
+      <span class="chip">LIVE</span>
+      VIX (placeholder)
+    </div>
+    <p class="subtitle">Showing current <strong>time</strong> as a stand-in so you can see updates in real time. We’ll wire an API next.</p>
+
+    <div class="ticker">
+      <div>
+        <div class="label">VIX</div>
+        <div id="vixValue" class="value green">--:--:--</div>
+      </div>
+      <div>
+        <div class="label">Last update</div>
+        <div id="lastUpdate" style="font-size:18px;">—</div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div style="display:flex;align-items:center;gap:8px"><span class="dot"></span> Auto-refresh every second</div>
+      <div>Source: <em>placeholder (clock)</em></div>
+    </div>
+
+    <div class="footer">
+      Coming soon: real VIX via API (Polygon, Alpha Vantage, etc.).  
+      <span style="opacity:.6">•</span>
+      <a href="#" title="not wired yet">Docs</a>
+    </div>
   </div>
 
-  <!-- Orange fish -->
-  <div class="fish fast">
-    <svg viewBox="0 0 120 60" xmlns="http://www.w3.org/2000/svg" aria-label="fish">
-      <defs>
-        <linearGradient id="g2" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0" stop-color="#ffb347"/>
-          <stop offset="1" stop-color="#ff7b00"/>
-        </linearGradient>
-      </defs>
-      <ellipse cx="50" cy="30" rx="30" ry="18" fill="url(#g2)" stroke="#b55600" stroke-width="2"/>
-      <polygon points="16,30 0,18 0,42" fill="#ff7b00" stroke="#b55600" stroke-width="2"/>
-      <polygon points="40,30 24,22 24,38" fill="#ff9a2e" stroke="#b55600" stroke-width="2" opacity=".85"/>
-      <circle cx="63" cy="26" r="3" fill="#fff"/><circle cx="63" cy="26" r="1.5" fill="#000"/>
-    </svg>
-  </div>
+<script>
+  // Placeholder updater: show HH:MM:SS as the "price"
+  function pad(n){return n.toString().padStart(2,'0')}
+  function tick(){
+    const d = new Date();
+    const hh = pad(d.getHours()), mm = pad(d.getMinutes()), ss = pad(d.getSeconds());
+    document.getElementById('vixValue').textContent = `${hh}:${mm}:${ss}`;
+    document.getElementById('lastUpdate').textContent = d.toLocaleTimeString();
+  }
+  tick();
+  setInterval(tick, 1000);
+
+  /* ===== Where we'll add the real API next =====
+  Example (Polygon.io):
+  async function loadVIX(){
+    const r = await fetch('https://api.polygon.io/v2/aggs/ticker/VIX/prev?apiKey=YOUR_KEY');
+    const j = await r.json();
+    const price = j.results?.[0]?.c; // close price
+    document.getElementById('vixValue').textContent = price?.toFixed(2) ?? 'N/A';
+    document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
+  }
+  setInterval(loadVIX, 5000);
+  */
+</script>
 </body>
 </html>
