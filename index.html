@@ -90,24 +90,20 @@
   const WORKER_BASE = "https://round-sunset-491a.ilanhzam.workers.dev";
   let MODE = "1d";
 
-  // canvas
   const cvs = document.getElementById("chart");
   const ctx = cvs.getContext("2d");
 
-  // read CSS tokens
   const cssVar = (name, fb) =>
     getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fb;
 
-  // fetch + update UI
   async function loadVIX() {
     try {
       const r = await fetch(`${WORKER_BASE}?mode=${MODE}`, { cache: "no-store" });
       const { last, prices, times } = await r.json();
 
-      // price text + color vs start
       if (last?.price != null && prices?.length) {
         const isUp = last.price >= prices[0];
-        const color = cssVar(isUp ? "--up" : "--down", isUp ? "#42f5c8" : "#ff6b6b");
+        const color = cssVar(isUp ? "--up" : "--down");
         const v = document.getElementById("vixValue");
         v.textContent = Number(last.price).toFixed(2);
         v.style.color = color;
@@ -116,7 +112,6 @@
       }
 
       document.getElementById("lastUpdate").textContent = new Date().toLocaleTimeString();
-
       drawChart(times, prices);
     } catch (e) {
       console.error(e);
@@ -125,15 +120,38 @@
     }
   }
 
-  // gap-compressed line chart (space by index, not time)
   function drawChart(times, prices){
-    const W=cvs.width, H=cvs.height;
+    const W = cvs.width, H = cvs.height;
     ctx.clearRect(0,0,W,H);
     if(!times?.length || !prices?.length) return;
 
-    // padding
     const L=50, R=10, T=10, B=26;
-
-    // scales
     const n = prices.length;
-    const x = i => L + (i/(n-1 || 1))*(W-L-R); // index-based spaci*
+    const x = i => L + (i/(n-1 || 1))*(W-L-R);
+    const min = Math.min(...prices), max = Math.max(...prices);
+    const y = p => T + (max-p)/(max-min || 1)*(H-T-B);
+
+    ctx.strokeStyle = "#2a6aa0";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    prices.forEach((p,i) => {
+      if(i===0) ctx.moveTo(x(i), y(p));
+      else ctx.lineTo(x(i), y(p));
+    });
+    ctx.stroke();
+  }
+
+  document.querySelectorAll(".btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      MODE = btn.dataset.mode;
+      loadVIX();
+    });
+  });
+
+  loadVIX();
+  setInterval(loadVIX, 1000);
+</script>
+</body>
+</html>
