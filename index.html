@@ -5,8 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>SerpaPinto • Live VIX</title>
 <style>
-  :root{ --bg1:#0b1220; --bg2:#0f1730; --card:#0f1b36cc; --glow:#00eaff;
-         --text:#e8f1ff; --muted:#96a3c7; --accent:#42f5c8; --line:#2a3d62;}
+  :root{
+    --bg1:#0b1220; --bg2:#0f1730; --card:#0f1b36cc; --glow:#00eaff;
+    --text:#e8f1ff; --muted:#96a3c7; --accent:#42f5c8; --line:#2a3d62;
+    --up:#42f5c8;  /* green  */
+    --down:#ff6b6b;/* red    */
+  }
   *{box-sizing:border-box} html,body{height:100%}
   body{
     margin:0; color:var(--text); font-family:ui-sans-serif,system-ui,Segoe UI,Roboto,Arial;
@@ -17,8 +21,8 @@
   }
   .grid::before,.grid::after{
     content:""; position:absolute; inset:-200vmax; background:
-    linear-gradient(#ffffff10 1px, transparent 1px) 0 0/40px 40px,
-    linear-gradient(90deg,#ffffff10 1px, transparent 1px) 0 0/40px 40px;
+      linear-gradient(#ffffff10 1px, transparent 1px) 0 0/40px 40px,
+      linear-gradient(90deg,#ffffff10 1px, transparent 1px) 0 0/40px 40px;
     animation:drift 30s linear infinite;
   }
   .grid::after{ filter:blur(1px); opacity:.4; animation-duration:50s;}
@@ -36,7 +40,6 @@
     border-top:1px solid var(--line); border-bottom:1px solid var(--line); padding:16px 0; margin:14px 0 8px; }
   .label{color:#9fb4da; font-size:14px}
   .value{font-size:clamp(40px,8vw,72px); font-weight:800; letter-spacing:.5px; text-shadow:0 0 22px #00eaff33}
-  .green{color:var(--accent)}
   .row{display:flex; gap:24px; flex-wrap:wrap; color:#b7c6e6; font-size:13px}
   .dot{width:8px; height:8px; border-radius:50%; background:var(--glow); box-shadow:0 0 12px var(--glow)}
   .btns{display:flex; gap:8px; margin:14px 0 6px;}
@@ -57,7 +60,7 @@
     <div class="ticker">
       <div>
         <div class="label">VIX</div>
-        <div id="vixValue" class="value green">--.--</div>
+        <div id="vixValue" class="value">--.--</div>
       </div>
       <div>
         <div class="label">Last update</div>
@@ -87,17 +90,31 @@
   const WORKER_BASE = "https://round-sunset-491a.ilanhzam.workers.dev";
   let MODE = "1d";
 
-  // price & clock
+  // canvas
+  const cvs = document.getElementById("chart");
+  const ctx = cvs.getContext("2d");
+
+  // read CSS tokens
+  const cssVar = (name, fb) =>
+    getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fb;
+
+  // fetch + update UI
   async function loadVIX() {
     try {
       const r = await fetch(`${WORKER_BASE}?mode=${MODE}`, { cache: "no-store" });
       const { last, prices, times } = await r.json();
 
-      if (last?.price != null) {
-        document.getElementById("vixValue").textContent = Number(last.price).toFixed(2);
+      // price text + color vs start
+      if (last?.price != null && prices?.length) {
+        const isUp = last.price >= prices[0];
+        const color = cssVar(isUp ? "--up" : "--down", isUp ? "#42f5c8" : "#ff6b6b");
+        const v = document.getElementById("vixValue");
+        v.textContent = Number(last.price).toFixed(2);
+        v.style.color = color;
       } else {
         document.getElementById("vixValue").textContent = "N/A";
       }
+
       document.getElementById("lastUpdate").textContent = new Date().toLocaleTimeString();
 
       drawChart(times, prices);
@@ -108,69 +125,15 @@
     }
   }
 
-  // simple canvas line chart
-  const cvs = document.getElementById("chart");
-  const ctx = cvs.getContext("2d");
-
-  function drawChart(times, prices) {
-    const W = cvs.width, H = cvs.height;
+  // gap-compressed line chart (space by index, not time)
+  function drawChart(times, prices){
+    const W=cvs.width, H=cvs.height;
     ctx.clearRect(0,0,W,H);
-
-    if (!times?.length || !prices?.length) return;
+    if(!times?.length || !prices?.length) return;
 
     // padding
     const L=50, R=10, T=10, B=26;
 
     // scales
-    const minP = Math.min(...prices), maxP = Math.max(...prices);
-    const minT = times[0], maxT = times[times.length-1];
-
-    function x(t){ return L + ( (t - minT) / (maxT - minT || 1) ) * (W - L - R); }
-    function y(p){ return T + (1 - (p - minP) / (maxP - minP || 1)) * (H - T - B); }
-
-    // grid
-    ctx.strokeStyle = "rgba(122, 215, 255, 0.15)";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    for (let i=0;i<=4;i++){
-      const yy = T + (H-T-B)*i/4;
-      ctx.moveTo(L,yy); ctx.lineTo(W-R,yy);
-    }
-    ctx.stroke();
-
-    // line
-    ctx.beginPath();
-    ctx.strokeStyle = "#42f5c8";
-    ctx.lineWidth = 2;
-    ctx.moveTo(x(times[0]), y(prices[0]));
-    for (let i=1;i<prices.length;i++){
-      ctx.lineTo(x(times[i]), y(prices[i]));
-    }
-    ctx.stroke();
-
-    // y labels
-    ctx.fillStyle = "#9fb4da";
-    ctx.font = "12px ui-sans-serif";
-    const labels = [minP, (minP+maxP)/2, maxP];
-    labels.forEach((v, idx)=>{
-      const yy = y(v);
-      ctx.fillText(v.toFixed(2), 4, yy+4);
-    });
-  }
-
-  // buttons
-  document.querySelectorAll(".btn").forEach(b=>{
-    b.addEventListener("click", ()=>{
-      document.querySelectorAll(".btn").forEach(x=>x.classList.remove("active"));
-      b.classList.add("active");
-      MODE = b.dataset.mode;
-      loadVIX();
-    });
-  });
-
-  // kick off + live refresh
-  loadVIX();
-  setInterval(loadVIX, 1000); // refresh every second
-</script>
-</body>
-</html>
+    const n = prices.length;
+    const x = i => L + (i/(n-1 || 1))*(W-L-R); // index-based spaci*
