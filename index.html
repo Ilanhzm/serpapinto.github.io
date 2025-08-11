@@ -1,160 +1,172 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>SerpaPinto • Live VIX</title>
-<style>
-  :root{
-    --bg1:#0b1220; --bg2:#0f1730; --card:#0f1b36cc; --glow:#00eaff;
-    --text:#e8f1ff; --muted:#96a3c7; --accent:#42f5c8; --line:#2a3d62;
-    --up:#42f5c8;  /* green  */
-    --down:#ff6b6b;/* red    */
-  }
-  *{box-sizing:border-box} html,body{height:100%}
-  body{
-    margin:0; color:var(--text); font-family:ui-sans-serif,system-ui,Segoe UI,Roboto,Arial;
-    background: radial-gradient(1200px 600px at 20% -10%, #10244f 0%, transparent 60%),
-                radial-gradient(900px 500px at 120% 120%, #0a233b 0%, transparent 55%),
-                linear-gradient(160deg,var(--bg1),var(--bg2));
-    overflow:hidden; display:flex; align-items:center; justify-content:center; padding:24px;
-  }
-  .grid::before,.grid::after{
-    content:""; position:absolute; inset:-200vmax; background:
-      linear-gradient(#ffffff10 1px, transparent 1px) 0 0/40px 40px,
-      linear-gradient(90deg,#ffffff10 1px, transparent 1px) 0 0/40px 40px;
-    animation:drift 30s linear infinite;
-  }
-  .grid::after{ filter:blur(1px); opacity:.4; animation-duration:50s;}
-  @keyframes drift{to{transform:translate3d(80px,80px,0)}}
-  .grid{ position:fixed; inset:0; pointer-events:none; }
-
-  .card{ position:relative; width:min(96vw,900px); border-radius:20px; padding:28px;
-    background:var(--card); backdrop-filter: blur(8px);
-    box-shadow:0 0 0 1px #7ad7ff22, 0 20px 60px #0008, inset 0 0 80px #7ad7ff0e; }
-  .heading{ display:flex; align-items:center; gap:12px; margin:0 0 8px 0; letter-spacing:.3px;
-    font-weight:700; font-size:clamp(18px,2.5vw,22px);}
-  .chip{padding:4px 10px; border-radius:999px; background:#102a3f; color:#9feaff; font-weight:600}
-  .subtitle{color:var(--muted); margin:0 0 18px 0; font-size:14px}
-  .ticker{ display:flex; align-items:end; gap:18px; flex-wrap:wrap;
-    border-top:1px solid var(--line); border-bottom:1px solid var(--line); padding:16px 0; margin:14px 0 8px; }
-  .label{color:#9fb4da; font-size:14px}
-  .value{font-size:clamp(40px,8vw,72px); font-weight:800; letter-spacing:.5px; text-shadow:0 0 22px #00eaff33}
-  .row{display:flex; gap:24px; flex-wrap:wrap; color:#b7c6e6; font-size:13px}
-  .dot{width:8px; height:8px; border-radius:50%; background:var(--glow); box-shadow:0 0 12px var(--glow)}
-  .btns{display:flex; gap:8px; margin:14px 0 6px;}
-  .btn{border:1px solid var(--line); color:#bcd1fb; background:#0e1b33; padding:6px 10px; border-radius:10px; cursor:pointer; font-weight:600;}
-  .btn.active{background:#163054; color:#9feaff; border-color:#2a6aa0}
-  .chartWrap{border:1px solid var(--line); border-radius:14px; margin-top:10px; padding:8px;}
-  canvas{width:100%; height:260px; display:block;}
-  .footer{display:flex; align-items:center; gap:10px; margin-top:10px; color:#90a2c7}
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>VIXit</title>
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <!-- Chart.js via CDN (for mini charts) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js" defer></script>
+  <script type="module" src="assets/js/app.js" defer></script>
 </head>
-<body>
-  <div class="grid"></div>
+<body class="theme-bear">
+  <!-- Left toolbar (present on all pages) -->
+  <aside class="sidebar">
+    <div class="logo">VIXit</div>
+    <nav>
+      <a href="#/main"     class="nav">Main</a>
+      <a href="#/live"     class="nav">Find live trades</a>
+      <a href="#/simulate" class="nav">Simulate Hike</a>
+      <a href="#/missed"   class="nav">Did you miss those trades?</a>
+    </nav>
 
-  <div class="card">
-    <div class="heading"><span class="chip">LIVE</span> VIX</div>
-    <p class="subtitle">Live price + mini chart. Toggle range below.</p>
+    <!-- Right column “Did you miss…” live tracker (hidden on main & missed) -->
+    <div id="mini-missed" class="mini-missed hide">
+      <h4>Recent tracked trades</h4>
+      <div id="mini-missed-list" class="list"></div>
+    </div>
+  </aside>
 
-    <div class="ticker">
-      <div>
-        <div class="label">VIX</div>
-        <div id="vixValue" class="value">--.--</div>
+  <!-- Main content -->
+  <main id="app">
+    <!-- MAIN -->
+    <section data-route="main" class="page">
+      <header class="page-head">
+        <h1>VIX • last 2 days</h1>
+        <div class="kpis">
+          <div class="kpi">
+            <div class="label">Live price</div>
+            <div id="livePrice" class="smn">--.--</div>
+          </div>
+          <div class="kpi">
+            <div class="label">2-day change</div>
+            <div id="change2d" class="smn">--.--%</div>
+          </div>
+        </div>
+      </header>
+
+      <div class="card">
+        <canvas id="mainChart" height="260"></canvas>
+        <div class="hint">* Placeholder chart (2-day). Theme turns <b>green</b> for bull / <b>red</b> for bear.</div>
       </div>
-      <div>
-        <div class="label">Last update</div>
-        <div id="lastUpdate" style="font-size:18px;">—</div>
+
+      <section class="read-more">
+        <button id="scrollTop" class="btn small">Back</button>
+        <div class="info-grid">
+          <article class="info-box">
+            <h3>How it works</h3>
+            <p>(Populated later)</p>
+          </article>
+          <article class="info-box">
+            <h3>Why VIX</h3>
+            <p>(Populated later)</p>
+          </article>
+          <article class="info-box">
+            <h3>Our strategy</h3>
+            <p>(Populated later)</p>
+          </article>
+        </div>
+      </section>
+    </section>
+
+    <!-- FIND LIVE TRADES -->
+    <section data-route="live" class="page">
+      <div id="live-empty" class="card center hide">
+        <h2>VIX IS CHILLING</h2>
+        <p>No high-probability trades detected.</p>
+        <div class="yoga"></div>
+        <button class="btn" id="tryAgain">TRY AGAIN</button>
       </div>
-    </div>
 
-    <div class="btns">
-      <button class="btn active" data-mode="1d">1D</button>
-      <button class="btn" data-mode="wtd">WTD</button>
-      <button class="btn" data-mode="7d">7D</button>
-    </div>
+      <div id="live-found" class="hide">
+        <div class="banner">TRADES ARE AVAILABLE!</div>
 
-    <div class="chartWrap">
-      <canvas id="chart" width="1200" height="300"></canvas>
-    </div>
+        <div class="card">
+          <div class="grid2">
+            <div>
+              <div class="label">Asset</div>
+              <div id="lf-asset" class="strong">VIX</div>
+            </div>
+            <div>
+              <div class="label">Live price</div>
+              <div id="lf-price" class="smn">--.--</div>
+            </div>
+            <div>
+              <div class="label">1-day change</div>
+              <div id="lf-1d" class="smn">--.--%</div>
+            </div>
+            <div>
+              <div class="label">2-day change</div>
+              <div id="lf-2d" class="smn">--.--%</div>
+            </div>
+          </div>
 
-    <div class="row" style="margin-top:8px">
-      <div style="display:flex;align-items:center;gap:8px"><span class="dot"></span> Auto-refresh every second</div>
-      <div>Source: Yahoo via Worker</div>
-    </div>
+          <div class="ranges">
+            <div class="range">
+              <div class="label">1-day range</div>
+              <div class="bar"><span id="bar1d"></span></div>
+            </div>
+            <div class="range">
+              <div class="label">2-day range</div>
+              <div class="bar"><span id="bar2d"></span></div>
+            </div>
+          </div>
 
-    <div class="footer">More views coming soon: VIX9D, VIX3M, SPY…</div>
-  </div>
+          <div class="tabs">
+            <button data-range="3h" class="tab active">3h</button>
+            <button data-range="8h" class="tab">8h</button>
+            <button data-range="1d" class="tab">1d</button>
+            <button data-range="2d" class="tab">2d</button>
+            <button data-range="1w" class="tab">1w</button>
+          </div>
+          <canvas id="liveChart" height="220"></canvas>
+        </div>
 
-<script>
-  const WORKER_BASE = "https://round-sunset-491a.ilanhzam.workers.dev";
-  let MODE = "1d";
+        <div id="trades" class="card list"></div>
+      </div>
+    </section>
 
-  const cvs = document.getElementById("chart");
-  const ctx = cvs.getContext("2d");
+    <!-- SIMULATE HIKE -->
+    <section data-route="simulate" class="page">
+      <div class="card">
+        <h2>Simulate a 2-day VIX hike</h2>
+        <div class="sim-grid">
+          <div class="slider-box">
+            <div class="label">Start price</div>
+            <input type="range" id="startPrice" min="10" max="60" step="0.25" />
+            <div id="startVal" class="smn">--.--</div>
+          </div>
+          <div class="slider-box">
+            <div class="label">End price</div>
+            <input type="range" id="endPrice" min="10" max="60" step="0.25" />
+            <div id="endVal" class="smn">--.--</div>
+          </div>
+        </div>
 
-  const cssVar = (name, fb) =>
-    getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fb;
+        <canvas id="simChart" height="160"></canvas>
+        <div class="kpis">
+          <div class="kpi"><div class="label">% hike</div><div id="hikePct" class="smn">--.--%</div></div>
+        </div>
 
-  async function loadVIX() {
-    try {
-      const r = await fetch(`${WORKER_BASE}?mode=${MODE}`, { cache: "no-store" });
-      const { last, prices, times } = await r.json();
+        <div class="actions">
+          <button id="calc" class="btn green">CALCULATE NOW</button>
+          <button id="reset" class="btn ghost">Reset</button>
+        </div>
 
-      if (last?.price != null && prices?.length) {
-        const isUp = last.price >= prices[0];
-        const color = cssVar(isUp ? "--up" : "--down");
-        const v = document.getElementById("vixValue");
-        v.textContent = Number(last.price).toFixed(2);
-        v.style.color = color;
-      } else {
-        document.getElementById("vixValue").textContent = "N/A";
-      }
+        <div class="results hide" id="simResults">
+          <div class="gauge">
+            <div class="needle" id="gaugeNeedle"></div>
+            <div class="gauge-label">Probability to revert</div>
+          </div>
+          <div class="strong" id="likelihood">—</div>
+        </div>
+      </div>
+    </section>
 
-      document.getElementById("lastUpdate").textContent = new Date().toLocaleTimeString();
-      drawChart(times, prices);
-    } catch (e) {
-      console.error(e);
-      document.getElementById("vixValue").textContent = "N/A";
-      document.getElementById("lastUpdate").textContent = "fetch error";
-    }
-  }
-
-  function drawChart(times, prices){
-  const W = cvs.width, H = cvs.height;
-  ctx.clearRect(0,0,W,H);
-  if(!times?.length || !prices?.length) return;
-
-  const L=50, R=10, T=10, B=26;
-  const n = prices.length;
-  const x = i => L + (i/(n-1 || 1))*(W-L-R);
-  const min = Math.min(...prices), max = Math.max(...prices);
-  const y = p => T + (max-p)/(max-min || 1)*(H-T-B);
-
-  // Choose line color based on start vs last price
-  const isUp = prices[prices.length - 1] >= prices[0];
-  ctx.strokeStyle = isUp ? cssVar("--up", "#42f5c8") : cssVar("--down", "#ff6b6b");
-  ctx.lineWidth = 2;
-
-  ctx.beginPath();
-  prices.forEach((p,i) => {
-    if(i===0) ctx.moveTo(x(i), y(p));
-    else ctx.lineTo(x(i), y(p));
-  });
-  ctx.stroke();
-}
-
-  document.querySelectorAll(".btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-      document.querySelectorAll(".btn").forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
-      MODE = btn.dataset.mode;
-      loadVIX();
-    });
-  });
-
-  loadVIX();
-  setInterval(loadVIX, 1000);
-</script>
+    <!-- MISSED (HISTORY) -->
+    <section data-route="missed" class="page">
+      <div id="history" class="card list"></div>
+    </section>
+  </main>
 </body>
 </html>
